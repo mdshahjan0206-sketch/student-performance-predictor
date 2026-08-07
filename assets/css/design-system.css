@@ -1,0 +1,354 @@
+/* ==========================================================================
+   REUSABLE DESIGN SYSTEM — Student Performance Predictor
+   Loaded globally via utils/ui.py -> inject_global_css()
+
+   PURE PRESENTATION LAYER. No selectors here touch app state, and no name
+   in this file redefines a variable or class from assets/css/style.css —
+   it only ADDS new tokens (--pp-*) and new utility classes (.pp-u-*,
+   .pp-anim-*) so it is safe to load on top of the existing stylesheet
+   without changing anything already on screen.
+
+   Sections:
+     1. Design tokens (typography / spacing / radius / shadow / motion)
+     2. Typography classes
+     3. Card style variants
+     4. Button style variants (for custom HTML buttons/links)
+     5. Input style helpers (for custom HTML form elements)
+     6. Animation classes
+     7. Responsive spacing utilities
+     8. Layout / general utility classes
+   ========================================================================== */
+
+:root{
+  /* ---- 1a. Typography scale ---- */
+  --pp-text-xs:0.75rem;
+  --pp-text-sm:0.875rem;
+  --pp-text-base:1rem;
+  --pp-text-lg:1.125rem;
+  --pp-text-xl:1.25rem;
+  --pp-text-2xl:1.5rem;
+  --pp-text-3xl:1.875rem;
+  --pp-text-4xl:2.25rem;
+
+  --pp-leading-tight:1.2;
+  --pp-leading-normal:1.55;
+  --pp-leading-relaxed:1.75;
+
+  --pp-font-normal:400;
+  --pp-font-medium:500;
+  --pp-font-semibold:600;
+  --pp-font-bold:700;
+  --pp-font-extrabold:800;
+
+  /* ---- 1b. Spacing scale (used by both padding/margin & gap utilities) ---- */
+  --pp-space-0:0;
+  --pp-space-1:0.25rem;
+  --pp-space-2:0.5rem;
+  --pp-space-3:0.75rem;
+  --pp-space-4:1rem;
+  --pp-space-5:1.5rem;
+  --pp-space-6:2rem;
+  --pp-space-7:3rem;
+  --pp-space-8:4rem;
+
+  /* ---- 1c. Extra radius tokens (complement --radius/--radius-sm/--radius-lg) ---- */
+  --pp-radius-xs:8px;
+  --pp-radius-pill:999px;
+
+  /* ---- 1d. Extra shadow tokens (complement --shadow-sm/--shadow-md/--shadow-lg) ---- */
+  --pp-shadow-xs:0 1px 4px rgba(31,41,55,0.05);
+  --pp-shadow-xl:0 32px 70px rgba(31,41,55,0.16);
+  --pp-shadow-focus:0 0 0 4px rgba(99,102,241,0.16);
+  --pp-shadow-inset:inset 0 1px 2px rgba(31,41,55,0.06);
+
+  /* ---- 1e. Motion tokens ---- */
+  --pp-duration-fast:150ms;
+  --pp-duration-base:280ms;
+  --pp-duration-slow:480ms;
+  --pp-ease:cubic-bezier(.16,1,.3,1);
+}
+
+/* ==========================================================================
+   2. TYPOGRAPHY CLASSES
+   ========================================================================== */
+.pp-u-text-xs{ font-size:var(--pp-text-xs) !important; }
+.pp-u-text-sm{ font-size:var(--pp-text-sm) !important; }
+.pp-u-text-base{ font-size:var(--pp-text-base) !important; }
+.pp-u-text-lg{ font-size:var(--pp-text-lg) !important; }
+.pp-u-text-xl{ font-size:var(--pp-text-xl) !important; }
+.pp-u-text-2xl{ font-size:var(--pp-text-2xl) !important; }
+.pp-u-text-3xl{ font-size:var(--pp-text-3xl) !important; }
+.pp-u-text-4xl{ font-size:var(--pp-text-4xl) !important; }
+
+.pp-u-font-normal{ font-weight:var(--pp-font-normal) !important; }
+.pp-u-font-medium{ font-weight:var(--pp-font-medium) !important; }
+.pp-u-font-semibold{ font-weight:var(--pp-font-semibold) !important; }
+.pp-u-font-bold{ font-weight:var(--pp-font-bold) !important; }
+.pp-u-font-extrabold{ font-weight:var(--pp-font-extrabold) !important; }
+
+.pp-u-leading-tight{ line-height:var(--pp-leading-tight) !important; }
+.pp-u-leading-normal{ line-height:var(--pp-leading-normal) !important; }
+.pp-u-leading-relaxed{ line-height:var(--pp-leading-relaxed) !important; }
+
+.pp-u-text-muted{ color:#6B7280 !important; }
+.pp-u-text-primary{ color:#6366F1 !important; }
+.pp-u-text-accent{ color:#8B5CF6 !important; }
+
+/* Ready-made heading presets, for headings rendered inside custom markdown blocks */
+.pp-u-heading-1, .pp-u-heading-2, .pp-u-heading-3, .pp-u-heading-4{
+  font-family:'Plus Jakarta Sans','Inter',sans-serif;
+  color:#1F2937;
+  letter-spacing:-0.02em;
+  margin:0 0 0.4rem 0;
+}
+.pp-u-heading-1{ font-size:var(--pp-text-4xl); font-weight:var(--pp-font-extrabold); line-height:var(--pp-leading-tight); }
+.pp-u-heading-2{ font-size:var(--pp-text-3xl); font-weight:var(--pp-font-bold); line-height:var(--pp-leading-tight); }
+.pp-u-heading-3{ font-size:var(--pp-text-2xl); font-weight:var(--pp-font-bold); line-height:var(--pp-leading-tight); }
+.pp-u-heading-4{ font-size:var(--pp-text-xl); font-weight:var(--pp-font-semibold); line-height:var(--pp-leading-tight); }
+
+/* ==========================================================================
+   3. CARD STYLE VARIANTS
+   Extend the existing .pp-card base (kept untouched) with opt-in modifiers.
+   Usage: <div class="pp-card pp-card-elevated"> ... </div>
+   ========================================================================== */
+.pp-card-flat{
+  box-shadow:none !important;
+  border-color:var(--border) !important;
+}
+.pp-card-elevated{
+  box-shadow:var(--pp-shadow-xl) !important;
+}
+.pp-card-outline{
+  background:transparent !important;
+  box-shadow:none !important;
+  border:1.5px dashed var(--border) !important;
+}
+.pp-card-gradient{
+  background:var(--grad-soft) !important;
+  border-color:rgba(99,102,241,0.18) !important;
+}
+.pp-card-compact{
+  padding:var(--pp-space-4) var(--pp-space-5) !important;
+}
+.pp-card-spacious{
+  padding:var(--pp-space-6) var(--pp-space-7) !important;
+}
+
+/* ==========================================================================
+   4. BUTTON STYLE VARIANTS
+   For custom HTML buttons/links rendered via st.markdown (e.g. inline CTAs
+   inside a .pp-card). Native Streamlit buttons keep using the existing
+   .stButton rules in style.css untouched — this is an additive, opt-in
+   class for hand-authored markup only.
+   Usage: <a class="pp-u-btn pp-u-btn-primary" href="...">Go</a>
+   ========================================================================== */
+.pp-u-btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  font-family:'Inter','Plus Jakarta Sans',sans-serif;
+  font-weight:var(--pp-font-bold);
+  font-size:var(--pp-text-sm);
+  padding:0.7rem 1.6rem;
+  border-radius:var(--radius-sm);
+  border:1px solid var(--border);
+  text-decoration:none;
+  cursor:pointer;
+  background-size:200% 200%;
+  background-position:0% 50%;
+  transition:transform 260ms var(--pp-ease),
+             box-shadow 260ms var(--pp-ease),
+             background-position 260ms ease,
+             border-color 260ms ease;
+  box-shadow:var(--pp-shadow-xs);
+}
+.pp-u-btn:hover{ transform:translateY(-3px); box-shadow:var(--shadow-md); background-position:100% 50%; }
+.pp-u-btn:active{ transform:translateY(0) scale(0.97); box-shadow:var(--pp-shadow-xs); transition-duration:120ms; }
+.pp-u-btn:focus-visible{ outline:none; box-shadow:var(--pp-shadow-focus); }
+.pp-u-btn[aria-disabled="true"], .pp-u-btn.pp-u-btn-disabled{
+  opacity:0.55; filter:grayscale(0.15); box-shadow:none !important; transform:none !important;
+  pointer-events:none; cursor:not-allowed;
+}
+
+.pp-u-btn-primary{
+  background-image:var(--grad-primary);
+  color:#fff !important;
+  border:none;
+}
+.pp-u-btn-primary:hover{ box-shadow:0 14px 30px rgba(99,102,241,0.32), 0 0 0 6px rgba(139,92,246,0.10); }
+
+.pp-u-btn-secondary{
+  background-image:var(--grad-soft);
+  color:#6366F1 !important;
+  border:1.5px solid rgba(99,102,241,0.28);
+}
+.pp-u-btn-secondary:hover{ border-color:var(--primary); box-shadow:0 10px 24px rgba(99,102,241,0.16); }
+
+.pp-u-btn-ghost{
+  background:transparent;
+  color:#1F2937 !important;
+  border-color:transparent;
+  box-shadow:none;
+}
+.pp-u-btn-ghost:hover{ background:var(--grad-soft); box-shadow:none; }
+.pp-u-btn-danger{
+  background:var(--danger);
+  color:#fff !important;
+  border:none;
+}
+
+.pp-u-btn-sm{ padding:0.44rem 1.05rem; font-size:var(--pp-text-xs); border-radius:var(--pp-radius-xs); }
+.pp-u-btn-lg{ padding:0.92rem 2.05rem; font-size:var(--pp-text-base); border-radius:var(--radius); }
+.pp-u-btn-pill{ border-radius:var(--pp-radius-pill); }
+.pp-u-btn-block{ display:flex; width:100%; }
+
+@media (max-width:768px){
+  .pp-u-btn{ padding:0.6rem 1.2rem; font-size:var(--pp-text-xs); }
+}
+
+/* ==========================================================================
+   5. INPUT STYLE HELPERS
+   For any custom HTML form elements rendered outside native Streamlit
+   widgets. Native st.text_input / st.number_input etc. keep using the
+   existing rules in style.css untouched.
+   ========================================================================== */
+.pp-u-input{
+  width:100%;
+  font-family:'Inter',sans-serif;
+  font-size:var(--pp-text-sm);
+  color:#1F2937;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:0.62rem 0.9rem;
+  box-shadow:var(--pp-shadow-xs);
+  transition:border-color var(--pp-duration-base) ease, box-shadow var(--pp-duration-base) ease;
+}
+.pp-u-input::placeholder{ color:#6B7280; opacity:0.8; }
+.pp-u-input:focus{
+  outline:none;
+  border-color:var(--primary);
+  box-shadow:var(--pp-shadow-focus);
+}
+.pp-u-input-label{
+  display:block;
+  font-size:var(--pp-text-xs);
+  font-weight:var(--pp-font-semibold);
+  color:#6B7280 !important;
+  text-transform:uppercase;
+  letter-spacing:0.03em;
+  margin-bottom:var(--pp-space-2);
+}
+.pp-u-input-hint{
+  font-size:var(--pp-text-xs);
+  color:#6B7280 !important;
+  margin-top:var(--pp-space-1);
+}
+.pp-u-input-error{
+  border-color:var(--danger) !important;
+  box-shadow:0 0 0 4px rgba(239,68,68,0.14) !important;
+}
+
+/* ==========================================================================
+   6. ANIMATION CLASSES
+   New keyframes are namespaced pp-u-* so they never collide with the
+   existing pp-fade-up / pp-float / pp-shimmer / pp-gradient-shift /
+   pp-pop / pp-ripple keyframes already defined in style.css.
+   ========================================================================== */
+@keyframes pp-u-fade-in{ from{opacity:0;} to{opacity:1;} }
+@keyframes pp-u-fade-up{ from{opacity:0; transform:translateY(16px);} to{opacity:1; transform:translateY(0);} }
+@keyframes pp-u-slide-in-left{ from{opacity:0; transform:translateX(-18px);} to{opacity:1; transform:translateX(0);} }
+@keyframes pp-u-slide-in-right{ from{opacity:0; transform:translateX(18px);} to{opacity:1; transform:translateX(0);} }
+@keyframes pp-u-scale-in{ from{opacity:0; transform:scale(0.94);} to{opacity:1; transform:scale(1);} }
+@keyframes pp-u-pulse-soft{ 0%,100%{opacity:1;} 50%{opacity:0.55;} }
+
+.pp-anim-fade-in{ animation:pp-u-fade-in var(--pp-duration-slow) var(--pp-ease) both; }
+.pp-anim-fade-up{ animation:pp-u-fade-up var(--pp-duration-slow) var(--pp-ease) both; }
+.pp-anim-slide-in-left{ animation:pp-u-slide-in-left var(--pp-duration-slow) var(--pp-ease) both; }
+.pp-anim-slide-in-right{ animation:pp-u-slide-in-right var(--pp-duration-slow) var(--pp-ease) both; }
+.pp-anim-scale-in{ animation:pp-u-scale-in var(--pp-duration-base) var(--pp-ease) both; }
+.pp-anim-pulse-soft{ animation:pp-u-pulse-soft 1.8s ease-in-out infinite; }
+
+/* Stagger helpers — pair with the classes above to sequence lists of cards */
+.pp-delay-100{ animation-delay:100ms; }
+.pp-delay-200{ animation-delay:200ms; }
+.pp-delay-300{ animation-delay:300ms; }
+.pp-delay-400{ animation-delay:400ms; }
+.pp-delay-500{ animation-delay:500ms; }
+
+@media (prefers-reduced-motion: reduce){
+  .pp-anim-fade-in, .pp-anim-fade-up, .pp-anim-slide-in-left,
+  .pp-anim-slide-in-right, .pp-anim-scale-in, .pp-anim-pulse-soft{
+    animation:none !important;
+  }
+}
+
+/* ==========================================================================
+   7. RESPONSIVE SPACING UTILITIES
+   Margin / padding / gap helpers built on the --pp-space-* scale.
+   ========================================================================== */
+.pp-u-m-0{ margin:var(--pp-space-0) !important; }
+.pp-u-mt-1{ margin-top:var(--pp-space-1) !important; } .pp-u-mt-2{ margin-top:var(--pp-space-2) !important; }
+.pp-u-mt-3{ margin-top:var(--pp-space-3) !important; } .pp-u-mt-4{ margin-top:var(--pp-space-4) !important; }
+.pp-u-mt-5{ margin-top:var(--pp-space-5) !important; } .pp-u-mt-6{ margin-top:var(--pp-space-6) !important; }
+.pp-u-mb-1{ margin-bottom:var(--pp-space-1) !important; } .pp-u-mb-2{ margin-bottom:var(--pp-space-2) !important; }
+.pp-u-mb-3{ margin-bottom:var(--pp-space-3) !important; } .pp-u-mb-4{ margin-bottom:var(--pp-space-4) !important; }
+.pp-u-mb-5{ margin-bottom:var(--pp-space-5) !important; } .pp-u-mb-6{ margin-bottom:var(--pp-space-6) !important; }
+.pp-u-mx-auto{ margin-left:auto !important; margin-right:auto !important; }
+
+.pp-u-p-0{ padding:var(--pp-space-0) !important; }
+.pp-u-p-1{ padding:var(--pp-space-1) !important; } .pp-u-p-2{ padding:var(--pp-space-2) !important; }
+.pp-u-p-3{ padding:var(--pp-space-3) !important; } .pp-u-p-4{ padding:var(--pp-space-4) !important; }
+.pp-u-p-5{ padding:var(--pp-space-5) !important; } .pp-u-p-6{ padding:var(--pp-space-6) !important; }
+.pp-u-px-2{ padding-left:var(--pp-space-2) !important; padding-right:var(--pp-space-2) !important; }
+.pp-u-px-4{ padding-left:var(--pp-space-4) !important; padding-right:var(--pp-space-4) !important; }
+.pp-u-py-2{ padding-top:var(--pp-space-2) !important; padding-bottom:var(--pp-space-2) !important; }
+.pp-u-py-4{ padding-top:var(--pp-space-4) !important; padding-bottom:var(--pp-space-4) !important; }
+
+.pp-u-gap-1{ gap:var(--pp-space-1) !important; } .pp-u-gap-2{ gap:var(--pp-space-2) !important; }
+.pp-u-gap-3{ gap:var(--pp-space-3) !important; } .pp-u-gap-4{ gap:var(--pp-space-4) !important; }
+.pp-u-gap-5{ gap:var(--pp-space-5) !important; } .pp-u-gap-6{ gap:var(--pp-space-6) !important; }
+
+@media (max-width:768px){
+  /* Tighten the scale one notch on small screens so custom blocks don't feel oversized */
+  .pp-u-mt-6{ margin-top:var(--pp-space-4) !important; }
+  .pp-u-mb-6{ margin-bottom:var(--pp-space-4) !important; }
+  .pp-u-p-6{ padding:var(--pp-space-4) !important; }
+  .pp-u-heading-1{ font-size:var(--pp-text-3xl); }
+  .pp-u-heading-2{ font-size:var(--pp-text-2xl); }
+}
+
+/* ==========================================================================
+   8. LAYOUT / GENERAL UTILITY CLASSES
+   ========================================================================== */
+.pp-u-flex{ display:flex !important; }
+.pp-u-flex-col{ display:flex !important; flex-direction:column !important; }
+.pp-u-flex-wrap{ flex-wrap:wrap !important; }
+.pp-u-items-center{ align-items:center !important; }
+.pp-u-items-start{ align-items:flex-start !important; }
+.pp-u-justify-center{ justify-content:center !important; }
+.pp-u-justify-between{ justify-content:space-between !important; }
+.pp-u-justify-end{ justify-content:flex-end !important; }
+
+.pp-u-text-center{ text-align:center !important; }
+.pp-u-text-left{ text-align:left !important; }
+.pp-u-text-right{ text-align:right !important; }
+
+.pp-u-w-full{ width:100% !important; }
+.pp-u-rounded{ border-radius:var(--radius) !important; }
+.pp-u-rounded-sm{ border-radius:var(--radius-sm) !important; }
+.pp-u-rounded-full{ border-radius:var(--pp-radius-pill) !important; }
+
+.pp-u-truncate{
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  white-space:nowrap !important;
+}
+.pp-u-shadow-xs{ box-shadow:var(--pp-shadow-xs) !important; }
+.pp-u-shadow-xl{ box-shadow:var(--pp-shadow-xl) !important; }
+
+.pp-u-hidden{ display:none !important; }
+@media (max-width:768px){
+  .pp-u-hidden-mobile{ display:none !important; }
+}
+@media (min-width:769px){
+  .pp-u-hidden-desktop{ display:none !important; }
+}

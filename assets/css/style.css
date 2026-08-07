@@ -1,0 +1,1313 @@
+/* ==========================================================================
+   PREMIUM DESIGN SYSTEM v2 — Student Performance Predictor
+   Applied globally via utils/ui.py -> inject_global_css()
+   Pure presentation layer. No app logic lives here.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+:root{
+  /* ---- Indigo/purple premium SaaS palette ---- */
+  --primary:#6366F1;        /* indigo */
+  --primary-dark:#4F46E5;
+  --secondary:#8B5CF6;      /* purple */
+  --accent:#8B5CF6;         /* purple (alias of secondary, kept for back-compat) */
+  --hover-tint:#EEF2FF;      /* lavender hover surface */
+  --selected-tint:#EDE9FE;   /* purple-tinted selected surface */
+  --graphite:#374151;
+
+  --success:#10B981;
+  --warning:#F59E0B;
+  --danger:#EF4444;
+
+  --bg:#F8FAFC;
+  --card:#FFFFFF;
+  --border:#E5E7EB;
+  --text:#1F2937;
+  --text-muted:#6B7280;
+
+  --radius:20px;
+  --radius-sm:14px;
+  --radius-lg:28px;
+  --shadow-sm:0 2px 10px rgba(31,41,55,0.05);
+  --shadow-md:0 10px 28px rgba(31,41,55,0.09);
+  --shadow-lg:0 24px 54px rgba(99,102,241,0.16);
+
+  --grad-primary:linear-gradient(135deg,#8B5CF6 0%,#6366F1 100%);
+  --grad-warm:linear-gradient(135deg,#F59E0B 0%,#FBBF24 100%);
+  --grad-soft:linear-gradient(135deg,rgba(99,102,241,0.08),rgba(139,92,246,0.08));
+
+  /* ---- Sidebar-only minimal/glassy light theme (scoped, does not affect the rest of the app) ---- */
+  --sb-bg:rgba(255,255,255,0.86);       /* glass panel */
+  --sb-card-bg:#FFFFFF;                 /* individual nav card */
+  --sb-page-bg:#F8FAFC;
+  --sb-border:rgba(15,23,42,0.07);      /* thin neutral border */
+  --sb-primary:var(--primary);          /* reuse brand indigo for icons/glow */
+  --sb-secondary:var(--secondary);      /* brand purple for subtle accents */
+  --sb-hover:rgba(99,102,241,0.045);    /* soft brand-tinted hover */
+  --sb-active-start:rgba(99,102,241,0.12); /* soft indigo */
+  --sb-active-end:rgba(139,92,246,0.14);   /* soft purple */
+  --sb-text:#1F2937;
+  --sb-text-muted:#6B7280;
+  --sb-shadow:0 4px 16px rgba(15,23,42,0.05);
+  --sb-shadow-hover:0 10px 24px rgba(15,23,42,0.08);
+  --sb-blur:18px;
+  --sb-transition:260ms cubic-bezier(.16,1,.3,1);
+}
+
+/* ============================================================
+   DEPLOYMENT THEME LOCK
+   ------------------------------------------------------------
+   Why this section exists: this app looked correct on localhost
+   but showed black/dark backgrounds and invisible text on
+   Streamlit Community Cloud. Root cause — Streamlit's app menu
+   gives every VIEWER (not just the developer) a personal
+   Light / Dark / "Use system setting" theme choice, and "Use
+   system setting" is the default. .streamlit/config.toml only
+   sets the app's own default theme; it cannot force a visitor's
+   individual choice. So any visitor whose OS/browser prefers
+   dark mode sees Streamlit's native widgets (selects, popovers,
+   inputs, forms, the header bar, dataframe chrome, etc.) rendered
+   in Streamlit's dark palette, while every hardcoded-light color
+   in this stylesheet stays light — producing exactly the
+   black-box / invisible-text symptoms reported.
+   Fix — force every stable data-testid / data-baseweb surface to
+   this app's own light palette with !important, independent of
+   whichever theme the visitor's browser or menu selects. Plain
+   CSS color-scheme is also pinned so native browser chrome
+   (scrollbars, built-in form control shading) doesn't invert.
+   ============================================================ */
+html{ color-scheme: light only; }
+
+/* Top-level app chrome — header/toolbar bar, main scroll region,
+   bottom block — previously unstyled, so a dark viewer theme left
+   a dark band behind/around the light content below it. */
+[data-testid="stAppViewContainer"],
+[data-testid="stMain"],
+[data-testid="stHeader"],
+[data-testid="stBottomBlockContainer"]{
+  background-color: var(--bg) !important;
+}
+[data-testid="stHeader"]{
+  background-color: transparent !important; /* sits on top of the gradient .stApp background below it */
+}
+[data-testid="stToolbar"]{
+  background-color: transparent !important;
+}
+
+/* Pure layout wrappers should never carry their own background —
+   force-transparent so a dark theme can't tint them independently
+   of the card/surface elements nested inside. */
+[data-testid="stVerticalBlock"],
+[data-testid="column"],
+[data-testid="stMarkdownContainer"],
+.element-container{
+  background-color: transparent !important;
+}
+
+/* Select / multiselect dropdown popover — rendered in a portal
+   outside the normal component tree, so it wasn't covered by the
+   existing .stSelectbox rules below and had no explicit
+   background/text color of its own. */
+div[data-baseweb="popover"]{
+  background-color: var(--card) !important;
+}
+div[data-baseweb="popover"] ul[role="listbox"]{
+  background-color: var(--card) !important;
+}
+div[data-baseweb="popover"] li[role="option"]{
+  color: #1F2937 !important;
+  background-color: transparent;
+}
+
+/* Closed selectbox / multiselect surface — force pure white at
+   EVERY DOM depth BaseWeb might render its background on. A
+   depth-limited fix (root / control / value-wrapper only) was not
+   enough: Streamlit Cloud's BaseWeb build nests the actual
+   background-carrying node deeper than that in some builds, so the
+   box still rendered black/near-black there with only the
+   (correctly forced-light) label text floating on top of it — dark
+   text on a dark box. The universal `*` selector below removes any
+   guesswork about the exact nesting depth. */
+[data-testid="stSelectbox"] div[data-baseweb="select"],
+[data-testid="stSelectbox"] div[data-baseweb="select"] *,
+[data-testid="stMultiSelect"] div[data-baseweb="select"],
+[data-testid="stMultiSelect"] div[data-baseweb="select"] *{
+  background-color: #FFFFFF !important;
+}
+/* The wildcard above also flattens the multiselect's selected-value
+   "chips" to white; restore them here as solid purple pill chips with
+   white text (per design reference), winning the cascade via a more
+   specific selector. */
+[data-testid="stMultiSelect"] div[data-baseweb="select"] div[data-baseweb="tag"]{
+  background-color: var(--secondary) !important;
+  border-radius:999px !important;
+  transition:background-color .2s ease, transform .15s ease;
+}
+[data-testid="stMultiSelect"] div[data-baseweb="select"] div[data-baseweb="tag"]:hover{
+  background-color: var(--primary) !important;
+  transform:translateY(-1px);
+}
+[data-testid="stMultiSelect"] div[data-baseweb="select"] div[data-baseweb="tag"] span,
+[data-testid="stMultiSelect"] div[data-baseweb="select"] div[data-baseweb="tag"] svg{
+  color:#FFFFFF !important;
+  fill:#FFFFFF !important;
+}
+
+/* ============================================================
+   EXPLICIT LABEL / TAG COLORS — no inherited or variable color
+   left on any text-bearing element. Every value below is a
+   literal hex code, not var(...), so nothing can be repainted
+   by a viewer's Light/Dark/System theme choice on Streamlit
+   Community Cloud.
+   ============================================================ */
+label{ color:#1F2937 !important; }
+span{ color:#1F2937; }
+small{ color:#6B7280; }
+p{ color:#1F2937; }
+
+/* Force-color every native widget container Streamlit can render,
+   plus its label/help/value text, with literal hex values. */
+[data-testid="stWidgetLabel"],
+[data-testid="stWidgetLabel"] *,
+[data-testid="stMarkdown"],
+[data-testid="stMarkdown"] p,
+[data-testid="stRadio"],
+[data-testid="stRadio"] label,
+[data-testid="stSelectbox"],
+[data-testid="stSelectbox"] *,
+[data-testid="stFileUploader"],
+[data-testid="stFileUploader"] section,
+[data-testid="stNumberInput"],
+[data-testid="stNumberInput"] label,
+[data-testid="stSlider"],
+[data-testid="stSlider"] label,
+[data-testid="stTextInput"],
+[data-testid="stTextInput"] label,
+[data-testid="stMultiSelect"],
+[data-testid="stMultiSelect"] *,
+[data-testid="stCaptionContainer"],
+[data-testid="stCaptionContainer"] *{
+  color:#1F2937 !important;
+}
+
+/* ============================================================
+   WIDGET LABELS, SELECTED VALUES & OTHER UNSTYLED TEXT
+   ------------------------------------------------------------
+   This is the actual cause of "Select Target Column" / "Problem
+   Type" / "Choose Model" / "Chart Type" / "Choose a file" /
+   "Batch Prediction" going invisible on Streamlit Community Cloud.
+   Every native widget label (selectbox, radio, slider, number
+   input, text input, file uploader, multiselect, date input) is
+   rendered by Streamlit inside a generic [data-testid="stWidgetLabel"]
+   wrapper. None of the rules above ever set a color on it, so it
+   was left to inherit Streamlit's own base theme color. On
+   localhost that resolves to a dark, readable color because the
+   developer's own browser is in light mode. On Streamlit Cloud,
+   any visitor whose browser/OS/menu choice resolves to Streamlit's
+   dark theme ("Use system setting" is the default there) gets that
+   same label rendered in Streamlit's dark-theme near-white
+   foreground color, while this page's background stays forced to
+   light above — white text on a white card. The same inheritance
+   gap also hit captions, file-uploader helper text, expander
+   headers, the closed value shown in a select/multiselect box, and
+   (missing !important) unselected radio-card option text. Every
+   rule below targets a stable data-testid / data-baseweb hook with
+   !important so it renders identically no matter which theme the
+   visitor's browser resolves to.
+   ============================================================ */
+
+/* Every native widget label: selectbox, multiselect, radio, slider,
+   number_input, text_input, text_area, date_input, file_uploader,
+   color_picker — this is the "Select Target Column" / "Problem
+   Type" / "Choose Model" / "Chart Type" / "Choose a file" fix. */
+[data-testid="stWidgetLabel"],
+[data-testid="stWidgetLabel"] p,
+[data-testid="stWidgetLabel"] span,
+[data-testid="stWidgetLabel"] label,
+[data-testid="stWidgetLabel"] div[data-testid="stMarkdownContainer"] p{
+  color: #1F2937 !important;
+}
+
+/* Captions — st.caption() and any widget help caption */
+[data-testid="stCaptionContainer"],
+[data-testid="stCaptionContainer"] p,
+[data-testid="stCaptionContainer"] span,
+.stCaption{
+  color: #6B7280 !important;
+}
+
+/* Help-icon tooltip popovers (the "?" glyph shown for help=...) */
+div[data-baseweb="tooltip"]{
+  background-color: var(--card) !important;
+  color: #1F2937 !important;
+}
+
+/* File uploader — "Drag and drop file here" / "Limit 200MB per
+   file • CSV, XLSX" instructions text. The "Browse files" button
+   itself is already covered by the button[kind="secondary"] rule
+   further down, and doesn't need repeating here. */
+[data-testid="stFileUploaderDropzoneInstructions"],
+[data-testid="stFileUploaderDropzoneInstructions"] span,
+[data-testid="stFileUploaderDropzoneInstructions"] small,
+[data-testid="stFileUploaderDropzoneInstructions"] div{
+  color: #6B7280 !important;
+}
+[data-testid="stFileUploaderFile"],
+[data-testid="stFileUploaderFileName"]{
+  color: #1F2937 !important;
+}
+
+/* Closed selectbox / multiselect — the currently selected value
+   text (e.g. the chosen target column / model name) never had an
+   explicit color of its own. */
+.stSelectbox div[data-baseweb="select"] > div,
+.stMultiSelect div[data-baseweb="select"] > div,
+.stSelectbox div[data-baseweb="select"] span,
+.stMultiSelect div[data-baseweb="select"] span{
+  color: #1F2937 !important;
+}
+/* Expander header text — background/border were themed above, the
+   summary label text itself was not. */
+.streamlit-expanderHeader,
+div[data-testid="stExpander"] summary,
+div[data-testid="stExpander"] summary p,
+div[data-testid="stExpander"] summary span{
+  color: #1F2937 !important;
+}
+
+/* Remaining alert variants — Success/Info are handled further down;
+   Warning/Error never had a color of their own. */
+div[data-testid="stAlertContentWarning"]{ color:#92400E !important; }
+div[data-testid="stAlertContentError"]{ color:#991B1B !important; }
+
+/* Text / number / date inputs — only radius/border were themed;
+   background and text color were left to Streamlit's own theme. */
+.stTextInput input, .stNumberInput input, .stDateInput input,
+.stTextArea textarea{
+  background-color: var(--card) !important;
+  color: #1F2937 !important;
+}
+
+/* Forms and bordered containers (covers st.form, st.container(border=True),
+   expander body content) */
+[data-testid="stForm"],
+[data-testid="stExpanderDetails"]{
+  background-color: var(--card) !important;
+  color: #1F2937 !important;
+}
+
+/* Checkboxes — unstyled previously; force a light, on-brand look
+   regardless of viewer theme. */
+.stCheckbox label span[data-baseweb="checkbox"]{
+  background-color: var(--card) !important;
+  border-color: var(--border) !important;
+  border-radius:6px !important;
+  transition:background-color .22s ease, border-color .22s ease, transform .22s cubic-bezier(.34,1.6,.64,1);
+}
+.stCheckbox label:hover span[data-baseweb="checkbox"]{
+  background-color: var(--hover-tint) !important;
+  border-color: var(--secondary) !important;
+}
+.stCheckbox label span[data-baseweb="checkbox"]:has(input:checked){
+  background-color: var(--secondary) !important;
+  border-color: var(--secondary) !important;
+  transform:scale(1.04);
+}
+.stCheckbox label span[data-baseweb="checkbox"] svg{
+  transition:transform .2s cubic-bezier(.34,1.6,.64,1);
+}
+.stCheckbox label span[data-baseweb="checkbox"]:has(input:checked) svg{
+  fill:#FFFFFF !important;
+}
+.stCheckbox label div[data-testid="stMarkdownContainer"] p{
+  color: #1F2937 !important;
+}
+
+/* Sidebar base surface, independent of the glassy panel styled later */
+section[data-testid="stSidebar"]{
+  background-color: var(--sb-page-bg) !important;
+}
+
+/* -------------------------------- Base -------------------------------- */
+html, body, [class*="css"], .stApp{
+  font-family:'Inter','Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif !important;
+  color:#1F2937;
+}
+.stApp{
+  background:
+    radial-gradient(circle at 8% 0%, rgba(99,102,241,0.06), transparent 45%),
+    radial-gradient(circle at 95% 15%, rgba(139,92,246,0.08), transparent 40%),
+    var(--bg);
+}
+h1,h2,h3,h4,h5,h6{
+  font-family:'Plus Jakarta Sans','Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif !important;
+  color:#1F2937;
+  letter-spacing:-0.02em;
+}
+.block-container{
+  padding-top:2.4rem;
+  padding-bottom:4rem;
+  max-width:1200px;
+  animation:pp-fade-up 0.55s cubic-bezier(.16,1,.3,1) both;
+}
+#MainMenu, footer{visibility:hidden;}
+
+/* ------------------------------ Keyframes ------------------------------ */
+@keyframes pp-fade-up{
+  from{opacity:0; transform:translateY(14px);}
+  to{opacity:1; transform:translateY(0);}
+}
+@keyframes pp-float{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-10px);}
+}
+@keyframes pp-shimmer{
+  0%{background-position:-400px 0;}
+  100%{background-position:400px 0;}
+}
+@keyframes pp-gradient-shift{
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
+@keyframes pp-pop{
+  0%{transform:scale(0.9); opacity:0;}
+  70%{transform:scale(1.03);}
+  100%{transform:scale(1); opacity:1;}
+}
+@keyframes pp-ripple{
+  0%{ transform:scale(0); opacity:.45;}
+  100%{ transform:scale(2.6); opacity:0;}
+}
+
+/* ------------------------------ Hero block ------------------------------ */
+.pp-hero{
+  position:relative;
+  padding:3rem 2.6rem;
+  border-radius:var(--radius-lg);
+  background:var(--grad-primary);
+  background-size:200% 200%;
+  animation:pp-gradient-shift 12s ease infinite;
+  overflow:hidden;
+  margin-bottom:2rem;
+  box-shadow:var(--shadow-lg);
+}
+.pp-hero::before{
+  content:"";
+  position:absolute; inset:0;
+  background:radial-gradient(circle at 85% 20%, rgba(255,255,255,0.16), transparent 55%);
+}
+.pp-hero-badge{
+  display:inline-flex; align-items:center; gap:6px;
+  background:rgba(255,255,255,0.16);
+  border:1px solid rgba(255,255,255,0.32);
+  color:#fff; font-size:0.78rem; font-weight:600;
+  padding:6px 14px; border-radius:999px;
+  backdrop-filter:blur(6px);
+  margin-bottom:1rem;
+  animation:pp-fade-up 0.6s ease both;
+}
+.pp-hero h1{
+  color:#fff; font-size:2.6rem; font-weight:800;
+  margin:0 0 0.6rem 0; position:relative; z-index:1;
+  animation:pp-fade-up 0.7s ease both;
+}
+.pp-hero p{
+  color:rgba(255,255,255,0.92); font-size:1.08rem; max-width:640px;
+  margin:0; position:relative; z-index:1;
+  animation:pp-fade-up 0.8s ease both;
+}
+
+/* --------------------------- Section headers --------------------------- */
+.pp-section-title{
+  display:flex; align-items:center; gap:12px;
+  margin:2.2rem 0 1rem 0;
+}
+.pp-section-title .pp-icon{
+  width:40px; height:40px; border-radius:12px;
+  background:var(--grad-soft);
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.15rem;
+}
+.pp-section-title h3{
+  margin:0; font-size:1.3rem; font-weight:700; color:#1F2937;
+}
+.pp-section-title span.pp-sub{
+  display:block; color:#6B7280; font-size:0.88rem; font-weight:400; margin-top:2px;
+}
+
+/* --------------------------------- Cards -------------------------------- */
+div[data-testid="stVerticalBlockBorderWrapper"]{
+  border-radius:var(--radius) !important;
+  border:1px solid var(--border) !important;
+  background:var(--card) !important;
+  box-shadow:var(--shadow-sm) !important;
+  padding:0.4rem 0.2rem;
+  transition:box-shadow .32s cubic-bezier(.16,1,.3,1), transform .32s cubic-bezier(.16,1,.3,1), border-color .32s ease;
+}
+div[data-testid="stVerticalBlockBorderWrapper"]:hover{
+  box-shadow:var(--shadow-md) !important;
+  transform:translateY(-3px);
+  border-color:rgba(99,102,241,0.25) !important;
+}
+
+.pp-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:1.6rem 1.8rem;
+  box-shadow:var(--shadow-sm);
+  transition:box-shadow .32s ease, transform .32s ease;
+  margin-bottom:1.4rem;
+}
+.pp-card:hover{ box-shadow:var(--shadow-md); transform:translateY(-2px); }
+
+.pp-feature-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:1.8rem;
+  height:100%;
+  transition:all .32s cubic-bezier(.16,1,.3,1);
+  position:relative;
+}
+.pp-feature-card:hover{
+  transform:translateY(-6px);
+  box-shadow:var(--shadow-lg);
+  border-color:rgba(99,102,241,0.3);
+}
+.pp-feature-card .pp-emoji{
+  font-size:1.8rem; width:52px; height:52px; border-radius:16px;
+  background:var(--grad-soft); display:flex; align-items:center; justify-content:center;
+  margin-bottom:1rem;
+}
+.pp-feature-card h4{ margin:0 0 0.4rem 0; font-weight:700; font-size:1.05rem;}
+.pp-feature-card p{ color:#6B7280; font-size:0.92rem; margin:0; line-height:1.55;}
+
+.pp-glass{
+  background:rgba(255,255,255,0.6);
+  backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,0.5);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow-sm);
+}
+
+/* ------------------------------ Stat / KPI ------------------------------ */
+.pp-stat{ text-align:center; padding:1.4rem 1rem; }
+.pp-stat .pp-stat-num{
+  font-size:2.1rem; font-weight:800;
+  background:var(--grad-primary);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.pp-stat .pp-stat-label{ color:#6B7280; font-size:0.88rem; font-weight:500; margin-top:2px;}
+
+[data-testid="stMetric"]{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:1.1rem 1.3rem 1.2rem 1.3rem;
+  box-shadow:var(--shadow-sm);
+  transition:transform .3s ease, box-shadow .3s ease;
+}
+[data-testid="stMetric"]:hover{ transform:translateY(-4px); box-shadow:var(--shadow-md); }
+[data-testid="stMetricLabel"]{
+  color:#6B7280 !important; font-weight:600 !important; font-size:0.82rem !important;
+  text-transform:uppercase; letter-spacing:0.03em;
+}
+[data-testid="stMetricValue"]{
+  color:#1F2937 !important; font-weight:800 !important;
+  font-family:'Plus Jakarta Sans',sans-serif !important;
+}
+
+/* ============================================================
+   BUTTONS — Premium, reusable button system
+   Applies to every st.button / st.download_button /
+   st.form_submit_button in the app via these shared rules, so a
+   single edit here restyles every button consistently. No click
+   handler, key, type=, or use_container_width= usage in any page
+   changes — this block is presentation only.
+   ============================================================ */
+.stButton>button, .stDownloadButton>button, .stFormSubmitButton>button{
+  position:relative;
+  overflow:hidden;
+  border-radius:var(--radius-sm) !important;
+  font-weight:700 !important;
+  font-family:'Inter','Plus Jakarta Sans',sans-serif !important;
+  letter-spacing:-0.01em;
+  padding:0.7rem 1.6rem !important;
+  border:1px solid var(--border) !important;
+  box-shadow:var(--pp-shadow-xs, var(--shadow-sm)) !important;
+  transition:transform 260ms cubic-bezier(.16,1,.3,1),
+             box-shadow 260ms cubic-bezier(.16,1,.3,1),
+             background-position 260ms ease,
+             border-color 260ms ease,
+             filter 260ms ease !important;
+  isolation:isolate;
+}
+
+/* soft ripple-on-click feel via focus/active pulse */
+.stButton>button::after, .stDownloadButton>button::after, .stFormSubmitButton>button::after{
+  content:"";
+  position:absolute; inset:0;
+  border-radius:inherit;
+  background:radial-gradient(circle, rgba(255,255,255,0.55) 10%, transparent 60%);
+  opacity:0; transform:scale(0);
+  transition:opacity .5s ease, transform .5s ease;
+  pointer-events:none;
+}
+.stButton>button:active::after, .stDownloadButton>button:active::after, .stFormSubmitButton>button:active::after{
+  opacity:1; transform:scale(1); transition:0s;
+  animation:pp-ripple .55s ease-out;
+}
+
+/* Hover — lift + shadow bloom, on every button variant */
+.stButton>button:hover, .stDownloadButton>button:hover, .stFormSubmitButton>button:hover{
+  transform:translateY(-3px);
+  box-shadow:var(--shadow-md) !important;
+}
+
+/* Press — quick, tactile settle; overrides the hover lift while held */
+.stButton>button:active, .stDownloadButton>button:active, .stFormSubmitButton>button:active{
+  transform:translateY(0px) scale(0.97) !important;
+  box-shadow:var(--pp-shadow-xs, var(--shadow-sm)) !important;
+  transition-duration:120ms !important;
+}
+
+/* Keyboard focus, kept accessible and on-brand */
+.stButton>button:focus-visible, .stDownloadButton>button:focus-visible, .stFormSubmitButton>button:focus-visible{
+  outline:none;
+  box-shadow:var(--pp-shadow-focus, 0 0 0 4px rgba(99,102,241,0.16)) !important;
+}
+
+/* Disabled — visually inert, no lift/press/gradient motion */
+.stButton>button:disabled, .stDownloadButton>button:disabled, .stFormSubmitButton>button:disabled{
+  opacity:0.55 !important;
+  filter:grayscale(0.15);
+  box-shadow:none !important;
+  transform:none !important;
+  cursor:not-allowed;
+}
+
+/* Primary — full saturated brand gradient */
+button[kind="primary"], button[data-testid="baseButton-primary"]{
+  background:var(--grad-primary) !important;
+  background-size:200% 200% !important;
+  background-position:0% 50%;
+  color:#fff !important;
+  border:none !important;
+}
+button[kind="primary"]:hover, button[data-testid="baseButton-primary"]:hover{
+  background-position:100% 50% !important;
+  box-shadow:0 14px 30px rgba(99,102,241,0.32), 0 0 0 6px rgba(139,92,246,0.10) !important;
+}
+button[kind="primary"]:active, button[data-testid="baseButton-primary"]:active{
+  background-position:100% 50% !important;
+  filter:brightness(0.96);
+}
+
+/* Secondary — soft brand-tinted gradient instead of flat white, so every
+   button reads as part of the same premium system, not just the primary one */
+button[kind="secondary"], button[data-testid="baseButton-secondary"]{
+  background:var(--grad-soft) !important;
+  background-size:200% 200% !important;
+  background-position:0% 50%;
+  color:#6366F1 !important;
+  border:1.5px solid rgba(99,102,241,0.28) !important;
+}
+button[kind="secondary"]:hover, button[data-testid="baseButton-secondary"]:hover{
+  background-position:100% 50% !important;
+  border-color:var(--primary) !important;
+  box-shadow:0 10px 24px rgba(99,102,241,0.16) !important;
+}
+button[kind="secondary"]:active, button[data-testid="baseButton-secondary"]:active{
+  background-position:100% 50% !important;
+  filter:brightness(0.98);
+}
+
+/* Responsive — slightly tighter footprint on small screens; full-width
+   buttons (use_container_width=True, set per-call in the page code and
+   left untouched) simply fill whatever space they already had */
+@media (max-width:768px){
+  .stButton>button, .stDownloadButton>button, .stFormSubmitButton>button{
+    padding:0.62rem 1.2rem !important;
+    font-size:0.92rem !important;
+  }
+}
+
+
+/* ============================================================
+   SELECTBOX / MULTISELECT — modern glass-pill dropdown
+   ============================================================ */
+.stSelectbox div[data-baseweb="select"] > div,
+.stMultiSelect div[data-baseweb="select"] > div{
+  border-radius:999px !important;
+  border-color:var(--border) !important;
+  background-color:#FFFFFF !important;
+  box-shadow:var(--shadow-sm);
+  padding-left:4px;
+  transition:border-color .3s cubic-bezier(.16,1,.3,1), box-shadow .3s cubic-bezier(.16,1,.3,1), transform .25s ease;
+}
+.stSelectbox div[data-baseweb="select"] > div:hover,
+.stMultiSelect div[data-baseweb="select"] > div:hover{
+  border-color:rgba(99,102,241,0.45) !important;
+  box-shadow:0 8px 20px rgba(99,102,241,0.14) !important;
+  transform:translateY(-1px);
+}
+.stSelectbox div[data-baseweb="select"] > div:focus-within,
+.stMultiSelect div[data-baseweb="select"] > div:focus-within{
+  border-color:var(--primary) !important;
+  box-shadow:0 0 0 4px rgba(99,102,241,0.16) !important;
+}
+/* selected value text — slightly bolder, brand-tinted for a premium feel */
+.stSelectbox div[data-baseweb="select"] > div > div,
+.stMultiSelect div[data-baseweb="select"] > div > div{
+  font-weight:600 !important;
+  color:var(--text) !important;
+}
+/* the little chevron icon: give it a soft brand-emerald tint and a
+   smooth 180° flip when the dropdown is open, instead of the plain
+   static grey caret */
+.stSelectbox div[data-baseweb="select"] svg,
+.stMultiSelect div[data-baseweb="select"] svg{
+  color:var(--primary) !important;
+  fill:var(--primary) !important;
+  transition:transform .25s cubic-bezier(.16,1,.3,1);
+}
+.stSelectbox div[data-baseweb="select"]:focus-within svg,
+.stMultiSelect div[data-baseweb="select"]:focus-within svg{
+  transform:rotate(180deg);
+}
+/* dropdown menu popover — floating glass card */
+div[data-baseweb="popover"] ul[role="listbox"]{
+  border-radius:16px !important;
+  border:1px solid var(--border) !important;
+  box-shadow:var(--shadow-lg) !important;
+  overflow:hidden;
+  padding:8px !important;
+  background:rgba(255,255,255,0.98) !important;
+  backdrop-filter:blur(10px);
+  animation:pp-dropdown-in .18s cubic-bezier(.16,1,.3,1);
+}
+@keyframes pp-dropdown-in{
+  from{ opacity:0; transform:translateY(-4px); }
+  to{ opacity:1; transform:translateY(0); }
+}
+div[data-baseweb="popover"] li[role="option"]{
+  border-radius:12px !important;
+  margin:2px 0 !important;
+  padding-top:10px !important;
+  padding-bottom:10px !important;
+  transition:background .2s ease, transform .15s ease;
+  font-weight:500;
+}
+div[data-baseweb="popover"] li[role="option"]:hover{
+  background:var(--hover-tint) !important;
+  transform:translateX(2px);
+}
+div[data-baseweb="popover"] li[aria-selected="true"]{
+  background:var(--selected-tint) !important;
+  color:#6D28D9 !important;
+  font-weight:600 !important;
+}
+/* checkmark accent in front of the currently selected option */
+div[data-baseweb="popover"] li[aria-selected="true"]::before{
+  content:"✓";
+  display:inline-block;
+  margin-right:8px;
+  color:#6D28D9;
+  font-weight:700;
+}
+
+.stTextInput input, .stNumberInput input, .stDateInput input{
+  border-radius:var(--radius-sm) !important;
+  border-color:var(--border) !important;
+  transition:border-color .28s ease, box-shadow .28s ease;
+}
+.stTextInput input:focus, .stNumberInput input:focus{
+  border-color:var(--primary) !important;
+  box-shadow:0 0 0 4px rgba(99,102,241,0.15) !important;
+}
+
+/* Number input stepper (+/-) buttons — unstyled previously, which left
+   Streamlit's dark default button chrome showing through as a jarring
+   pair of black squares next to an otherwise light, on-brand input. */
+[data-testid="stNumberInputStepUp"],
+[data-testid="stNumberInputStepDown"]{
+  background-color:var(--card) !important;
+  border:1px solid var(--border) !important;
+  color:var(--primary) !important;
+  transition:background-color .2s ease, border-color .2s ease, transform .15s ease;
+}
+[data-testid="stNumberInputStepUp"] svg,
+[data-testid="stNumberInputStepDown"] svg{
+  fill:var(--primary) !important;
+  stroke:var(--primary) !important;
+}
+[data-testid="stNumberInputStepUp"]:hover,
+[data-testid="stNumberInputStepDown"]:hover{
+  background-color:var(--hover-tint) !important;
+  border-color:var(--primary) !important;
+}
+[data-testid="stNumberInputStepUp"]:active,
+[data-testid="stNumberInputStepDown"]:active{
+  transform:scale(0.94);
+}
+[data-testid="stNumberInput"] > div{
+  border-radius:var(--radius-sm) !important;
+  overflow:hidden;
+  border:1px solid var(--border) !important;
+  background-color:var(--card) !important;
+}
+[data-testid="stNumberInput"] > div:focus-within{
+  border-color:var(--primary) !important;
+  box-shadow:0 0 0 4px rgba(99,102,241,0.15) !important;
+}
+[data-testid="stNumberInput"] input{
+  border:none !important;
+  box-shadow:none !important;
+}
+
+/* ============================================================
+   CUSTOM RADIO — Uiverse-inspired animated card component
+   Applied to every st.radio() via the reusable custom_radio()
+   wrapper in utils/ui.py (Chart Type / Problem Type / any future radio).
+   ============================================================ */
+div[role="radiogroup"]{
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  width:100%;
+  padding:2px 0;
+}
+div[role="radiogroup"] label[data-baseweb="radio"]{
+  position:relative;
+  display:flex;
+  align-items:center;
+  gap:11px;
+  margin:0 !important;
+  padding:12px 20px 12px 16px !important;
+  border-radius:16px;
+  background:var(--card);
+  border:1.5px solid var(--border);
+  box-shadow:var(--shadow-sm);
+  cursor:pointer;
+  transition:transform .28s cubic-bezier(.34,1.4,.64,1), background .28s ease-in-out,
+             border-color .28s ease-in-out, box-shadow .28s ease-in-out;
+}
+div[role="radiogroup"] label[data-baseweb="radio"]:hover{
+  transform:translateY(-3px);
+  border-color:rgba(99,102,241,0.4);
+  background:var(--grad-soft);
+  box-shadow:var(--shadow-md);
+}
+/* Hide BaseWeb's native circle graphic — kept in the DOM (accessible,
+   still the real <input type="radio">) but visually replaced below. */
+div[role="radiogroup"] label[data-baseweb="radio"] > div:first-child{
+  position:absolute !important;
+  width:1px; height:1px;
+  opacity:0;
+  overflow:hidden;
+}
+/* Custom animated indicator: an empty ring that "fills in" on selection */
+div[role="radiogroup"] label[data-baseweb="radio"]::before{
+  content:"";
+  flex-shrink:0;
+  width:20px; height:20px;
+  border-radius:50%;
+  border:2px solid var(--border);
+  background:#fff;
+  box-shadow:inset 0 0 0 0 var(--primary);
+  transition:border-color .28s ease-in-out, box-shadow .28s cubic-bezier(.34,1.6,.64,1);
+}
+div[role="radiogroup"] label[data-baseweb="radio"]:hover::before{
+  border-color:rgba(99,102,241,0.5);
+}
+div[role="radiogroup"] label[data-baseweb="radio"]:has(input:checked)::before{
+  border-color:var(--primary);
+  box-shadow:inset 0 0 0 5px var(--primary), 0 0 0 4px rgba(99,102,241,0.15);
+}
+/* Card + label text state when selected */
+div[role="radiogroup"] label[data-baseweb="radio"]:has(input:checked){
+  background:var(--grad-soft);
+  border-color:var(--primary);
+  box-shadow:0 10px 24px rgba(99,102,241,0.18);
+  transform:translateY(-2px);
+}
+div[role="radiogroup"] label[data-baseweb="radio"]:has(input:checked):hover{
+  transform:translateY(-4px);
+}
+div[role="radiogroup"] label[data-baseweb="radio"] > div:last-child{
+  padding:0 !important;
+  font-weight:600;
+  font-size:0.93rem;
+  color:#6B7280 !important;
+  transition:color .25s ease, font-weight .25s ease;
+}
+div[role="radiogroup"] label[data-baseweb="radio"]:has(input:checked) > div:last-child{
+  color:#6366F1 !important;
+  font-weight:700 !important;
+}
+/* Legacy wrapper kept for spacing consistency */
+.stRadio > div{ background:transparent; border:none; padding:0; }
+
+.stSlider [data-baseweb="slider"] div[role="slider"]{
+  background:var(--primary) !important;
+  box-shadow:0 0 0 4px rgba(99,102,241,0.18) !important;
+}
+.stSlider [data-baseweb="slider"] > div > div{
+  background:var(--grad-primary) !important;
+}
+
+.stProgress > div > div > div{
+  background:var(--grad-primary) !important;
+  background-size:200% 100%;
+  animation:pp-gradient-shift 2.2s ease infinite;
+  border-radius:999px !important;
+}
+.stProgress > div > div{ border-radius:999px !important; background:var(--border) !important;}
+
+/* Tabs */
+.stTabs [data-baseweb="tab-list"]{
+  gap:6px;
+  background:var(--card);
+  padding:6px;
+  border-radius:var(--radius-sm);
+  border:1px solid var(--border);
+}
+.stTabs [data-baseweb="tab"],
+.stTabs [data-baseweb="tab"] p{
+  border-radius:12px !important;
+  font-weight:600;
+  color:#6B7280 !important;
+  padding:8px 18px !important;
+  transition:all .28s cubic-bezier(.16,1,.3,1);
+}
+.stTabs [aria-selected="true"],
+.stTabs [aria-selected="true"] p{
+  background:var(--grad-primary) !important;
+  color:#fff !important;
+  box-shadow:var(--shadow-sm);
+}
+
+/* Expander */
+.streamlit-expanderHeader, div[data-testid="stExpander"] summary{
+  border-radius:var(--radius-sm) !important;
+  background:var(--card) !important;
+  border:1px solid var(--border) !important;
+  font-weight:600 !important;
+  transition:box-shadow .28s ease, border-color .28s ease;
+}
+.streamlit-expanderHeader:hover, div[data-testid="stExpander"] summary:hover{
+  border-color:rgba(99,102,241,0.35) !important;
+  box-shadow:var(--shadow-sm);
+}
+div[data-testid="stExpander"]{ border:none !important; }
+
+/* Alerts */
+div[data-testid="stAlert"]{
+  border-radius:var(--radius-sm) !important;
+  box-shadow:var(--shadow-sm);
+  border:1px solid var(--border);
+  animation:pp-pop .35s ease both;
+}
+div[data-testid="stAlertContentSuccess"]{ color:#047857 !important; }
+div[data-testid="stAlertContentInfo"]{ color:#374151 !important; }
+
+/* File uploader */
+[data-testid="stFileUploaderDropzone"]{
+  border-radius:var(--radius) !important;
+  border:2px dashed rgba(99,102,241,0.35) !important;
+  background:linear-gradient(180deg, rgba(99,102,241,0.045), rgba(139,92,246,0.045)) !important;
+  transition:all .3s cubic-bezier(.16,1,.3,1);
+}
+[data-testid="stFileUploaderDropzone"]:hover{
+  border-color:var(--primary) !important;
+  background:rgba(99,102,241,0.08) !important;
+  transform:translateY(-2px);
+}
+
+/* Dataframe — fallback styling for any native st.dataframe instance.
+   Note: st.dataframe renders its grid on an HTML5 canvas inside a sandboxed
+   iframe, so only the outer container (border/radius/shadow) is reachable
+   from CSS; header/zebra/hover colors can't be set here. Every table in
+   this app has been switched to the .pp-table component below instead,
+   which is a real HTML table and fully themeable. */
+div[data-testid="stDataFrame"]{
+  border-radius:var(--radius) !important;
+  overflow:hidden;
+  border:1px solid var(--border);
+  box-shadow:var(--shadow-sm);
+}
+
+/* ============================================================
+   TABLES — premium HTML table component (utils/ui.py -> premium_table())
+   White surface · rounded corners · soft shadow · thin borders ·
+   sticky soft-green gradient header · zebra striping · hover highlight ·
+   responsive/mobile-friendly · modern typography & spacing.
+   ============================================================ */
+.pp-table-wrap{
+  position:relative;
+  width:100%;
+  max-width:100%;
+  overflow:auto;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow-sm);
+  margin:0.5rem 0 1.1rem 0;
+  transition:box-shadow .3s ease, border-color .3s ease;
+}
+.pp-table-wrap:hover{
+  box-shadow:var(--shadow-md);
+  border-color:rgba(99,102,241,0.18);
+}
+
+.pp-table{
+  width:100%;
+  min-width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  font-family:'Inter','Plus Jakarta Sans',sans-serif;
+  font-size:0.9rem;
+  color:#1F2937;
+}
+
+/* Sticky, soft green gradient header */
+.pp-table thead th{
+  position:sticky;
+  top:0;
+  z-index:2;
+  background:linear-gradient(135deg, rgba(99,102,241,0.16) 0%, rgba(139,92,246,0.10) 100%);
+  color:#1F2937;
+  font-weight:700;
+  font-size:0.76rem;
+  text-transform:uppercase;
+  letter-spacing:0.04em;
+  text-align:left;
+  padding:12px 16px;
+  border-bottom:1px solid var(--border);
+  white-space:nowrap;
+  cursor:pointer;
+  user-select:none;
+  transition:background 260ms ease;
+}
+.pp-table thead th:first-child{ border-top-left-radius:var(--radius); }
+.pp-table thead th:last-child{ border-top-right-radius:var(--radius); }
+.pp-table thead th:hover{
+  background:linear-gradient(135deg, rgba(99,102,241,0.24) 0%, rgba(139,92,246,0.16) 100%);
+}
+.pp-table thead th .pp-th-sort{
+  margin-left:6px;
+  font-size:0.68rem;
+  opacity:0.4;
+}
+.pp-table thead th.pp-th-active{ color:#6366F1; }
+.pp-table thead th.pp-th-active .pp-th-sort{ opacity:1; color:#6366F1; }
+
+/* Dark, readable body text with consistent spacing */
+.pp-table tbody td{
+  padding:10px 16px;
+  border-bottom:1px solid var(--border);
+  white-space:nowrap;
+  color:#1F2937;
+}
+.pp-table tbody tr:last-child td{ border-bottom:none; }
+
+/* Zebra striping */
+.pp-table tbody tr:nth-child(even) td{ background:rgba(99,102,241,0.03); }
+
+/* Hover highlight */
+.pp-table tbody tr:hover td{ background:rgba(99,102,241,0.09); }
+
+.pp-table-note{
+  font-size:0.78rem;
+  color:#6B7280;
+  padding:6px 2px 8px 2px;
+}
+
+/* Responsive / mobile-friendly */
+@media (max-width:768px){
+  .pp-table{ font-size:0.82rem; }
+  .pp-table thead th, .pp-table tbody td{ padding:8px 10px; }
+  .pp-table-wrap{ border-radius:var(--radius-sm); max-height:340px !important; }
+}
+
+/* Divider */
+hr{ border-color:var(--border) !important; margin:2rem 0 !important;}
+.pp-divider{
+  height:1px; width:100%;
+  background:linear-gradient(90deg, transparent, var(--border) 20%, var(--border) 80%, transparent);
+  margin:2.2rem 0;
+}
+
+/* ============================================================
+   SIDEBAR — minimal / glassy, floating, card-based redesign
+   Restyle only. No selector below touches navigation logic —
+   st.navigation / the pages/ folder still drives routing and
+   page order exactly as before.
+   ============================================================ */
+section[data-testid="stSidebar"]{
+  background:var(--sb-page-bg) !important;
+}
+/* The floating glass panel itself */
+section[data-testid="stSidebar"] > div:first-child{
+  background:var(--sb-bg);
+  -webkit-backdrop-filter:blur(var(--sb-blur));
+  backdrop-filter:blur(var(--sb-blur));
+  margin:14px 0 14px 14px;
+  border-radius:var(--radius-lg);
+  box-shadow:var(--sb-shadow);
+  border:1px solid var(--sb-border);
+  position:relative;
+  overflow:hidden;
+  transition:box-shadow var(--sb-transition);
+}
+/* Fallback for browsers/renderers without backdrop-filter support: use a
+   fully opaque white instead of the translucent glass tint, so there's
+   never a chance of a dark background showing through unblurred. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))){
+  section[data-testid="stSidebar"] > div:first-child{
+    background: var(--sb-card-bg);
+  }
+}
+/* cursor-tracking soft glow spotlight, position set via JS custom properties */
+section[data-testid="stSidebar"] > div:first-child::before{
+  content:"";
+  position:absolute;
+  left:var(--pp-mx, 50%);
+  top:var(--pp-my, 20%);
+  width:260px; height:260px;
+  background:radial-gradient(circle, rgba(99,102,241,0.05), transparent 70%);
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+  transition:left .12s linear, top .12s linear;
+  z-index:0;
+}
+section[data-testid="stSidebar"] *{ color:#1F2937 !important; position:relative; z-index:1; }
+
+section[data-testid="stSidebar"] [data-testid="stMetric"]{
+  background:#FFFFFF !important;
+  border-color:var(--sb-border) !important;
+}
+
+.pp-sidebar-brand{
+  display:flex; align-items:center; gap:12px;
+  padding:1.1rem 1rem 1.3rem 1rem;
+  border-bottom:1px solid var(--sb-border);
+  margin-bottom:1rem;
+}
+.pp-sidebar-brand .pp-logo{
+  width:42px; height:42px; border-radius:13px;
+  background:linear-gradient(135deg,var(--sb-active-start),var(--sb-active-end));
+  border:1px solid var(--sb-border);
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.3rem;
+  box-shadow:var(--sb-shadow);
+  animation:pp-float 4s ease-in-out infinite;
+}
+.pp-sidebar-brand .pp-brand-name{ font-weight:800; font-size:1.02rem; color:#1F2937 !important; line-height:1.1;}
+.pp-sidebar-brand .pp-brand-tag{ font-size:0.72rem; color:#6B7280 !important; letter-spacing:.02em;}
+
+/* Nav items: each page is its own independent floating white card, generously spaced */
+section[data-testid="stSidebarNav"]{ padding:0 12px; }
+section[data-testid="stSidebarNav"] ul{ gap:10px; display:flex; flex-direction:column; }
+section[data-testid="stSidebarNav"] li{ list-style:none; position:relative; }
+section[data-testid="stSidebarNav"] a{
+  display:flex; align-items:center; gap:10px;
+  background:var(--sb-card-bg);
+  border:1px solid var(--sb-border) !important;
+  border-radius:16px !important;
+  margin:3px 2px !important;
+  padding:12px 16px !important;
+  font-weight:600 !important;
+  font-size:0.93rem;
+  color:#1F2937 !important;
+  box-shadow:var(--sb-shadow);
+  transition:transform var(--sb-transition), background var(--sb-transition),
+             border-color var(--sb-transition), box-shadow var(--sb-transition);
+  will-change:transform;
+}
+/* Elegant per-page icon accents — purely visual ::before content, ordered to
+   match pages/1_Home.py .. pages/6_About.py; if the entry-point script also
+   appears as the first nav item, icons simply shift by one slot. Adjust
+   freely without touching any routing file. */
+section[data-testid="stSidebarNav"] li:nth-child(1) a::before{ content:"🏠"; font-size:1.05rem; line-height:1; }
+section[data-testid="stSidebarNav"] li:nth-child(2) a::before{ content:"👋"; font-size:1.05rem; line-height:1; }
+section[data-testid="stSidebarNav"] li:nth-child(3) a::before{ content:"📂"; font-size:1.05rem; line-height:1; }
+section[data-testid="stSidebarNav"] li:nth-child(4) a::before{ content:"📊"; font-size:1.05rem; line-height:1; }
+section[data-testid="stSidebarNav"] li:nth-child(5) a::before{ content:"🤖"; font-size:1.05rem; line-height:1; }
+section[data-testid="stSidebarNav"] li:nth-child(6) a::before{ content:"🔮"; font-size:1.05rem; line-height:1; }
+section[data-testid="stSidebarNav"] li:nth-child(7) a::before{ content:"ℹ️"; font-size:1.05rem; line-height:1; }
+
+/* Hover lift — clean translateY, no scale/magnify, in-spec 260ms */
+section[data-testid="stSidebarNav"] a:hover{
+  background:var(--sb-hover) !important;
+  border-color:rgba(99,102,241,0.22) !important;
+  transform:translateY(-3px);
+  box-shadow:var(--sb-shadow-hover);
+}
+/* Active page — soft brand gradient, no harsh fill */
+section[data-testid="stSidebarNav"] a[aria-current="page"]{
+  background:linear-gradient(135deg,var(--sb-active-start),var(--sb-active-end)) !important;
+  border-color:rgba(99,102,241,0.18) !important;
+  box-shadow:var(--sb-shadow-hover), inset 0 0 0 1px rgba(255,255,255,0.5);
+}
+section[data-testid="stSidebarNav"] a[aria-current="page"] span{
+  color:#6366F1 !important; font-weight:700 !important;
+}
+/* thin accent indicator bar on the active card */
+section[data-testid="stSidebarNav"] a[aria-current="page"]::after{
+  content:"";
+  position:absolute;
+  left:-10px; top:50%;
+  width:4px; height:60%;
+  border-radius:4px;
+  background:var(--primary);
+  transform:translateY(-50%);
+}
+
+.pp-sidebar-footer{
+  position:relative; margin-top:1rem; padding:1rem;
+  border-top:1px solid var(--sb-border);
+  font-size:0.75rem; color:#6B7280 !important;
+}
+
+/* Sidebar developer credit — quiet, single instance, not a watermark */
+.pp-sidebar-credit{
+  position:relative; margin-top:0.2rem; padding:0.9rem 1rem 1.1rem 1rem;
+  border-top:1px solid var(--sb-border);
+}
+.pp-sidebar-credit .pp-credit-kicker{
+  display:flex; align-items:center; gap:6px;
+  font-size:0.68rem; letter-spacing:0.04em; text-transform:uppercase;
+  color:#6B7280 !important; font-weight:600; margin-bottom:4px;
+}
+.pp-sidebar-credit .pp-credit-name{
+  font-size:0.88rem; font-weight:700; color:#1F2937 !important; margin-bottom:1px;
+}
+.pp-sidebar-credit .pp-credit-role{
+  font-size:0.72rem; color:#6B7280 !important; line-height:1.4; margin-bottom:6px;
+}
+.pp-sidebar-credit .pp-credit-tags{
+  font-size:0.66rem; color:#6366F1 !important; letter-spacing:0.02em; font-weight:600;
+}
+
+/* ============================================================
+   FOOTER — premium, single-instance credit line
+   ============================================================ */
+.pp-app-footer{
+  text-align:center;
+  padding:2.2rem 1rem 1.2rem 1rem;
+  margin-top:1.6rem;
+  border-top:1px solid var(--border);
+}
+.pp-app-footer .pp-footer-copy{
+  font-size:0.86rem; font-weight:600; color:#1F2937; margin-bottom:4px;
+}
+.pp-app-footer .pp-footer-credit{
+  font-size:0.82rem; color:#6B7280; margin-bottom:2px;
+}
+.pp-app-footer .pp-footer-credit strong{ color:#6366F1; font-weight:700; }
+.pp-app-footer .pp-footer-meta{
+  font-size:0.74rem; color:#6B7280; opacity:0.75; margin-top:8px;
+  letter-spacing:0.01em;
+}
+.pp-app-footer .pp-footer-stack{
+  display:inline-flex; gap:8px; flex-wrap:wrap; justify-content:center;
+  margin-top:10px;
+}
+.pp-app-footer .pp-footer-stack span{
+  font-size:0.7rem; font-weight:600; color:#6B7280;
+  background:var(--grad-soft); padding:3px 10px; border-radius:999px;
+}
+
+/* Small elegant splash credit — used once, e.g. below the landing hero */
+.pp-splash-credit{
+  text-align:center; font-size:0.82rem; color:#6B7280;
+  margin-top:0.6rem; opacity:0.85;
+}
+.pp-splash-credit span{ color:#F59E0B; }
+
+/* ============================================================
+   DEVELOPER PROFILE CARD — About page
+   ============================================================ */
+.pp-dev-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:2rem 2.2rem;
+  box-shadow:var(--shadow-sm);
+  transition:box-shadow .32s ease, transform .32s ease;
+}
+.pp-dev-card:hover{ box-shadow:var(--shadow-lg); transform:translateY(-3px); }
+.pp-dev-card .pp-dev-header{
+  display:flex; align-items:center; gap:1.1rem;
+  margin-bottom:1.3rem;
+}
+.pp-dev-card .pp-dev-avatar{
+  width:64px; height:64px; border-radius:18px;
+  background:var(--grad-primary);
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.7rem; color:#fff;
+  box-shadow:0 10px 24px rgba(99,102,241,0.32);
+  flex-shrink:0;
+}
+.pp-dev-card .pp-dev-name{ font-size:1.28rem; font-weight:800; margin:0; color:#1F2937; }
+.pp-dev-card .pp-dev-role{ font-size:0.92rem; color:#6366F1; font-weight:600; margin-top:2px; }
+.pp-dev-card .pp-dev-role-secondary{ font-size:0.84rem; color:#F59E0B; font-weight:600; margin-top:1px; }
+.pp-dev-card .pp-dev-edu{ font-size:0.84rem; color:#6B7280; margin-top:3px; }
+
+.pp-dev-card .pp-dev-section-label{
+  font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em;
+  color:#6B7280; margin:1.1rem 0 0.6rem 0;
+}
+.pp-dev-card .pp-dev-tags{ display:flex; flex-wrap:wrap; gap:8px; }
+.pp-dev-card .pp-dev-tags span{
+  font-size:0.8rem; font-weight:600; color:#6366F1;
+  background:var(--grad-soft); border:1px solid rgba(99,102,241,0.15);
+  padding:5px 13px; border-radius:999px;
+  transition:transform .22s ease, box-shadow .22s ease;
+}
+.pp-dev-card .pp-dev-tags span:hover{
+  transform:translateY(-2px);
+  box-shadow:0 6px 14px rgba(99,102,241,0.16);
+}
+.pp-dev-card .pp-dev-about{
+  font-size:0.94rem; line-height:1.75; color:#6B7280;
+  font-style:italic;
+  border-left:3px solid var(--secondary);
+  padding-left:1rem;
+  margin-top:0.4rem;
+}
+
+/* ------------------------------ Misc / badges ------------------------------ */
+.pp-badge{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:4px 12px; border-radius:999px;
+  font-size:0.78rem; font-weight:700;
+  background:rgba(99,102,241,0.1); color:#6366F1;
+}
+.pp-badge.success{ background:rgba(16,185,129,0.12); color:#047857;}
+.pp-badge.warning{ background:rgba(245,158,11,0.12); color:#92400E;}
+.pp-badge.danger{ background:rgba(239,68,68,0.12); color:#991B1B;}
+
+.pp-footer{
+  text-align:center; padding:2.4rem 0 1rem 0; color:#6B7280; font-size:0.85rem;
+}
+.pp-footer a{ color:#6366F1; text-decoration:none; font-weight:600;}
+
+.pp-skeleton{
+  border-radius:var(--radius-sm);
+  background:linear-gradient(90deg,#EEF2FF 25%, #F8FAFC 37%, #EEF2FF 63%);
+  background-size:400px 100%;
+  animation:pp-shimmer 1.4s ease infinite;
+  height:100%;
+}
+
+/* Responsive tweaks */
+@media (max-width:768px){
+  .pp-hero{ padding:2.2rem 1.4rem;}
+  .pp-hero h1{ font-size:1.9rem;}
+  section[data-testid="stSidebar"] > div:first-child{ margin:8px; }
+}

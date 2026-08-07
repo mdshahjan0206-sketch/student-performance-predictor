@@ -1,0 +1,235 @@
+/* ==========================================================================
+   PREMIUM FUTURISTIC BUTTON — reusable component
+   Loaded globally via utils/ui.py -> inject_global_css(), AFTER style.css
+   and design-system.css, so its rules win the cascade for the properties
+   it touches without having to rewrite the base button system.
+
+   SCOPE / SAFETY
+   - Targets Streamlit's native primary buttons only:
+       button[kind="primary"], button[data-testid="baseButton-primary"]
+     That selector already covers every main call-to-action in the app
+     (Predict, Train Model, Analyze Dataset, nav buttons, etc.) via
+     type="primary" in the page code — nothing in the pages changes.
+   - Shape/size are intentionally left alone: border-radius, padding,
+     font and layout all still come from style.css. This file only adds
+     background, border-glow, glass, and motion layers on top.
+   - Pure presentation: no selector here reads or writes Streamlit state.
+   - Two pseudo-elements only (::before for the flowing smoke, ::after
+     for the cursor-tracked spotlight/liquid reflection), so it never
+     needs extra DOM nodes and can't break Streamlit's re-render on rerun.
+   - Cursor position comes from two CSS custom properties, --pb-mx/--pb-my,
+     written by a small mousemove listener (see
+     _inject_premium_button_interactions() in utils/ui.py). If that
+     script hasn't run yet (or JS is disabled) they fall back to a
+     centered default below, so the button never renders "broken".
+   ========================================================================== */
+
+:root{
+  --pb-blue:#3B82F6;
+  --pb-purple:#8B5CF6;
+  --pb-cyan:#22D3EE;
+  --pb-mx:50%;
+  --pb-my:35%;
+}
+
+/* ---- Base state: glass + aurora gradient + neon edge glow ---- */
+button[kind="primary"],
+button[data-testid="baseButton-primary"]{
+  position:relative;
+  overflow:hidden;
+  isolation:isolate;
+  color:#fff !important;
+  border:1px solid rgba(255,255,255,0.28) !important;
+
+  /* Layer 1 (top): permanent soft glass highlight, top-left streak
+     Layer 2 (bottom): the blue -> purple -> cyan aurora gradient   */
+  background:
+    radial-gradient(130% 170% at 18% -25%, rgba(255,255,255,0.38), transparent 55%),
+    linear-gradient(120deg, var(--pb-blue) 0%, var(--pb-purple) 48%, var(--pb-cyan) 100%) !important;
+  background-size:150% 150%, 240% 240% !important;
+  background-position:0% 0%, 0% 50% !important;
+  background-repeat:no-repeat, no-repeat !important;
+
+  /* Glassmorphism: soft blur of whatever sits behind the button */
+  backdrop-filter:blur(14px) saturate(180%);
+  -webkit-backdrop-filter:blur(14px) saturate(180%);
+
+  /* Glowing border, built from stacked color-matched shadows rather
+     than an actual border so it can bloom outward on hover without
+     ever changing the button's box size */
+  box-shadow:
+    0 2px 8px rgba(15,23,42,0.20),
+    inset 0 1px 1px rgba(255,255,255,0.35),
+    inset 0 -12px 18px -12px rgba(15,23,42,0.35),
+    0 10px 24px -10px rgba(99,102,241,0.55),
+    0 0 20px -4px rgba(59,130,246,0.45),
+    0 0 26px -6px rgba(34,211,238,0.28) !important;
+
+  animation:pbAurora 8s ease-in-out infinite, pbNeonBreathe 3.6s ease-in-out infinite;
+  transition:
+    transform 260ms cubic-bezier(.16,1,.3,1),
+    box-shadow 320ms cubic-bezier(.16,1,.3,1),
+    filter 320ms ease,
+    background-position 320ms ease !important;
+  will-change:transform, box-shadow, background-position;
+}
+
+/* ---- Flowing smoke / light wave, seamless left-to-right loop ----
+   A double-width pseudo-element tiled with two identical copies of
+   the same soft blobs, translated by exactly one tile-width (-50%
+   of its own 200% width == 100% of the button). Using `transform`
+   (not background-position) keeps this on the GPU compositor for a
+   smooth, jank-free 60fps drift with no visible seam or flicker. */
+button[kind="primary"]::before,
+button[data-testid="baseButton-primary"]::before{
+  content:"";
+  position:absolute;
+  top:-30%;
+  left:0;
+  width:200%;
+  height:160%;
+  pointer-events:none;
+  z-index:-2;
+  background-image:
+    radial-gradient(9% 40% at 12% 55%, rgba(255,255,255,0.9), transparent 70%),
+    radial-gradient(6% 26% at 24% 40%, rgba(165,243,252,0.7), transparent 70%),
+    radial-gradient(16% 55% at 40% 60%, rgba(255,255,255,0.5), transparent 70%),
+    radial-gradient(12% 45% at 63% 42%, rgba(196,181,253,0.45), transparent 70%),
+    radial-gradient(18% 60% at 85% 58%, rgba(255,255,255,0.4), transparent 70%);
+  background-repeat:repeat-x;
+  background-size:50% 100%;
+  filter:blur(7px);
+  mix-blend-mode:screen;
+  opacity:0.55;
+  transform:translate3d(0,0,0);
+  translate:0 0;
+  animation:pbSmokeDrift 6.5s linear infinite;
+  transition:opacity 320ms ease, filter 320ms ease, translate 260ms cubic-bezier(.16,1,.3,1);
+  /* Negative z-index keeps this layer above the button's own gradient
+     background but BEHIND its text. Positioned pseudo-elements with
+     z-index 0+ actually paint above a button's plain in-flow label —
+     negative is what's needed so the smoke never washes out the text. */
+}
+
+/* ---- Cursor-tracked spotlight + liquid light reflection ----
+   Hidden (opacity:0) until hovered; positioned every frame at
+   --pb-mx/--pb-my by the mousemove listener. Reusing this layer for
+   the existing click-ripple keeps the whole effect to a single
+   pseudo-element, so :active still animates via the pp-ripple
+   keyframe already defined in style.css. */
+button[kind="primary"]::after,
+button[data-testid="baseButton-primary"]::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  pointer-events:none;
+  z-index:-1;
+  background:
+    radial-gradient(120px 120px at var(--pb-mx) var(--pb-my), rgba(255,255,255,0.65), transparent 62%),
+    radial-gradient(circle, rgba(255,255,255,0.55) 10%, transparent 60%);
+  opacity:0;
+  transform:scale(0.9);
+  transition:opacity 360ms ease, transform 360ms ease;
+}
+
+/* ---- Hover: brighter glow, lift, bloom, reflection follows cursor ---- */
+button[kind="primary"]:hover,
+button[data-testid="baseButton-primary"]:hover{
+  transform:translateY(-4px) !important;
+  filter:brightness(1.07) saturate(1.15);
+  background-position:6% -6%, 100% 50% !important;
+  box-shadow:
+    0 4px 10px rgba(15,23,42,0.22),
+    inset 0 1px 1px rgba(255,255,255,0.45),
+    inset 0 -12px 18px -12px rgba(15,23,42,0.30),
+    0 16px 34px -10px rgba(99,102,241,0.65),
+    0 0 34px -4px rgba(59,130,246,0.65),
+    0 0 46px -6px rgba(34,211,238,0.45),
+    0 0 70px -10px rgba(139,92,246,0.35) !important;
+}
+
+button[kind="primary"]:hover::before,
+button[data-testid="baseButton-primary"]:hover::before{
+  opacity:0.85;
+  filter:blur(5px);
+  /* subtle vertical bias toward the cursor's Y position, layered on
+     top of the ongoing translateX drift animation via the separate
+     `translate` property so both motions compose smoothly */
+  translate:0 calc((var(--pb-my) - 35%) * 0.25);
+}
+
+button[kind="primary"]:hover::after,
+button[data-testid="baseButton-primary"]:hover::after{
+  opacity:1;
+  transform:scale(1);
+}
+
+/* Press — quick tactile settle; keep the lift/glow from snapping shut
+   instantly, and let the ripple keyframe in style.css own ::after */
+button[kind="primary"]:active,
+button[data-testid="baseButton-primary"]:active{
+  transform:translateY(-1px) scale(0.98) !important;
+  filter:brightness(0.98) saturate(1.05);
+  transition-duration:120ms !important;
+}
+
+@keyframes pbAurora{
+  0%{ background-position:0% 0%, 0% 50%; }
+  50%{ background-position:12% -8%, 100% 50%; }
+  100%{ background-position:0% 0%, 0% 50%; }
+}
+
+@keyframes pbNeonBreathe{
+  0%, 100%{
+    box-shadow:
+      0 2px 8px rgba(15,23,42,0.20),
+      inset 0 1px 1px rgba(255,255,255,0.35),
+      inset 0 -12px 18px -12px rgba(15,23,42,0.35),
+      0 10px 24px -10px rgba(99,102,241,0.55),
+      0 0 20px -4px rgba(59,130,246,0.45),
+      0 0 26px -6px rgba(34,211,238,0.28);
+  }
+  50%{
+    box-shadow:
+      0 2px 8px rgba(15,23,42,0.20),
+      inset 0 1px 1px rgba(255,255,255,0.42),
+      inset 0 -12px 18px -12px rgba(15,23,42,0.30),
+      0 12px 28px -10px rgba(99,102,241,0.68),
+      0 0 26px -4px rgba(59,130,246,0.6),
+      0 0 36px -6px rgba(34,211,238,0.42);
+  }
+}
+
+@keyframes pbSmokeDrift{
+  from{ transform:translate3d(0,0,0); }
+  to{ transform:translate3d(-50%,0,0); }
+}
+
+/* Disabled — inherit the base rule's inert look, drop every animated
+   layer so a disabled premium button reads as clearly non-interactive */
+button[kind="primary"]:disabled,
+button[data-testid="baseButton-primary"]:disabled{
+  animation:none !important;
+  filter:grayscale(0.25) brightness(0.9) !important;
+}
+button[kind="primary"]:disabled::before,
+button[kind="primary"]:disabled::after,
+button[data-testid="baseButton-primary"]:disabled::before,
+button[data-testid="baseButton-primary"]:disabled::after{
+  animation:none !important;
+  opacity:0 !important;
+}
+
+/* Respect reduced-motion preferences: keep the gradient/glass/glow
+   look, drop the continuous motion */
+@media (prefers-reduced-motion: reduce){
+  button[kind="primary"],
+  button[data-testid="baseButton-primary"]{
+    animation:none !important;
+  }
+  button[kind="primary"]::before,
+  button[data-testid="baseButton-primary"]::before{
+    animation:none !important;
+  }
+}
