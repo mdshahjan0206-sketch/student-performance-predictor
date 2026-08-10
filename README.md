@@ -1,21 +1,32 @@
 # 🎓 AI Student Performance Predictor
 
-An AI-powered **Student Performance Prediction System** built using **Python, Streamlit, and Machine Learning**. The application allows users to upload and validate datasets, explore student data, analyze important factors, and predict student performance through an interactive web interface.
+An AI-powered **Student Performance Prediction System** built using **Python, Streamlit, and Machine Learning**.
+
+## 🌐 Live Website
+
+🚀 **[Open Student Performance Predictor](https://student-performance-predictor-8nwv.onrender.com)**
+
+> Try the live application directly in your browser.
+
+## 📂 GitHub Repository
+
+💻 **[View Source Code on GitHub](https://github.com/mdshahjan0206-sketch/student-performance-predictor)**
+
+---
 
 ## 🚀 Project Overview
 
-Student performance is influenced by various academic, demographic, social, and behavioral factors. This project uses machine learning and data analysis techniques to identify these patterns and provide student performance predictions.
+Student performance is influenced by various academic, demographic, social, and behavioral factors. This project uses Machine Learning and Data Science techniques to analyze these factors and predict student performance.
 
-The system provides an interactive dashboard where users can:
+The application provides an interactive web interface for:
 
-- 📊 Explore student datasets
-- 📁 Upload and validate CSV datasets
-- 🤖 Predict student performance using Machine Learning
-- 📈 Analyze model performance
-- 🔍 Identify important performance factors
-- 📄 Generate prediction reports
-- 📥 Export results as CSV
-- 🌐 Use the complete system through a Streamlit web application
+- 📁 Dataset upload and validation
+- 📊 Dataset analysis
+- 📈 Interactive visualizations
+- 🤖 Machine Learning prediction
+- 🧠 Model insights
+- 📄 Report generation
+- 📥 Result export
 
 ---
 
@@ -38,7 +49,6 @@ The system provides an interactive dashboard where users can:
 
 ### 📊 Dataset Overview
 - Dataset preview
-- Column information
 - Data types
 - Missing-value analysis
 - Statistical summary
@@ -47,13 +57,14 @@ The system provides an interactive dashboard where users can:
 
 ### 🎯 Student Performance Prediction
 - Enter student-related information
-- Process input through the ML pipeline
+- Process input through the Machine Learning pipeline
 - Predict student performance
 - Display prediction results
-- Display prediction confidence where supported
+- Display confidence where supported
 - Generate downloadable reports
 
 ### 📈 Dashboard
+
 Interactive visualizations including:
 
 - Study time vs performance
@@ -65,14 +76,15 @@ Interactive visualizations including:
 - Performance distributions
 
 ### 🧠 Model Insights
+
 - Model evaluation metrics
 - Feature importance
 - Confusion matrix
 - ROC analysis where applicable
-- Model methodology
 - Preprocessing explanation
 
 ### 📄 Reports & Export
+
 - Download prediction reports
 - Export prediction history
 - Export analysis results as CSV
@@ -85,22 +97,18 @@ Interactive visualizations including:
 |---|---|
 | Python | Core programming language |
 | Streamlit | Web application framework |
-| Pandas | Data manipulation and analysis |
+| Pandas | Data analysis |
 | NumPy | Numerical computation |
 | Scikit-learn | Machine Learning |
-| Plotly | Interactive visualizations |
+| Plotly | Interactive visualization |
 | Matplotlib | Data visualization |
-| Joblib | Model/artifact handling |
-| ReportLab | PDF report generation |
+| Joblib | Model handling |
+| ReportLab | PDF generation |
 | Statsmodels | Statistical analysis |
 
 ---
 
-## 🤖 Machine Learning
-
-The project uses a machine learning pipeline for student performance prediction.
-
-### Pipeline
+## 🤖 Machine Learning Pipeline
 
 ```text
 Dataset
