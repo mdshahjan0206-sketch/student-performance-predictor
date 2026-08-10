@@ -1,130 +1,114 @@
 # 🎓 AI Student Performance Predictor
 
-An AI-powered **Student Performance Prediction System** built using **Python, Streamlit, and Machine Learning**.
+> An interactive Machine Learning and Data Science web application for analyzing and predicting student performance.
 
-## 🌐 Live Website
+<p align="center">
 
-🚀 **[Open Student Performance Predictor](https://student-performance-predictor-8nwv.onrender.com)**
+🌐 **Live Website:**  
+<a href="https://student-performance-predictor-8nwv.onrender.com">
+https://student-performance-predictor-8nwv.onrender.com
+</a>
 
-> Try the live application directly in your browser.
+<br><br>
 
-## 📂 GitHub Repository
+💻 **GitHub Repository:**  
+<a href="https://github.com/mdshahjan0206-sketch/student-performance-predictor">
+student-performance-predictor
+</a>
 
-💻 **[View Source Code on GitHub](https://github.com/mdshahjan0206-sketch/student-performance-predictor)**
-
----
-
-## 🚀 Project Overview
-
-Student performance is influenced by various academic, demographic, social, and behavioral factors. This project uses Machine Learning and Data Science techniques to analyze these factors and predict student performance.
-
-The application provides an interactive web interface for:
-
-- 📁 Dataset upload and validation
-- 📊 Dataset analysis
-- 📈 Interactive visualizations
-- 🤖 Machine Learning prediction
-- 🧠 Model insights
-- 📄 Report generation
-- 📥 Result export
+</p>
 
 ---
 
-## ✨ Features
+## 🚀 Overview
+
+The **AI Student Performance Predictor** is a web-based Data Science application developed using **Python, Streamlit, and Machine Learning**.
+
+The system helps analyze student-related data, identify important factors affecting performance, visualize patterns, and generate machine learning-based predictions through an easy-to-use interface.
+
+The application is designed as an academic Data Science project while following a professional dashboard-style user interface.
+
+---
+
+## 🌐 Live Demo
+
+### 🚀 Try the Application
+
+**👉 [Open Student Performance Predictor](https://student-performance-predictor-8nwv.onrender.com)**
+
+The application is deployed using **Render** and can be accessed directly through a web browser.
+
+---
+
+## ✨ Key Features
 
 ### 🏠 Home
-- Project introduction
-- Project statistics
-- Feature overview
+
+- Project overview
+- Application introduction
 - Quick navigation
+- Project highlights
+- Modern dashboard interface
 
-### 📁 Dataset Upload & Validation
-- Upload CSV datasets
-- Automatically detect dataset columns
-- Validate required features
-- Detect missing values
-- Detect duplicate records
-- Identify numeric and categorical columns
-- Display validation results before prediction
+### 📁 Dataset Upload
 
-### 📊 Dataset Overview
+- Upload student datasets
+- CSV dataset support
+- Dataset validation
+- Automatic dataset inspection
 - Dataset preview
+
+### 🔍 Dataset Validation
+
+The application checks the uploaded dataset for:
+
+- Required columns
+- Missing values
+- Duplicate records
 - Data types
+- Numeric features
+- Categorical features
+- Dataset compatibility
+
+### 📊 Data Analysis
+
+Perform exploratory data analysis using:
+
+- Dataset statistics
+- Column information
 - Missing-value analysis
-- Statistical summary
 - Correlation analysis
+- Distribution analysis
 - Interactive visualizations
 
-### 🎯 Student Performance Prediction
-- Enter student-related information
-- Process input through the Machine Learning pipeline
-- Predict student performance
-- Display prediction results
-- Display confidence where supported
-- Generate downloadable reports
+### 📈 Interactive Dashboard
 
-### 📈 Dashboard
+Visualize student performance through:
 
-Interactive visualizations including:
-
-- Study time vs performance
-- Absences vs performance
-- Feature importance
-- Academic factors
-- Student demographics
-- Correlation analysis
+- Histograms
+- Box plots
+- Correlation heatmaps
+- Feature analysis
 - Performance distributions
+- Academic factor analysis
 
-### 🧠 Model Insights
+### 🤖 Machine Learning
 
-- Model evaluation metrics
-- Feature importance
-- Confusion matrix
-- ROC analysis where applicable
-- Preprocessing explanation
+The application uses a trained Machine Learning model to predict student performance.
 
-### 📄 Reports & Export
-
-- Download prediction reports
-- Export prediction history
-- Export analysis results as CSV
-
----
-
-## 🛠️ Technologies Used
-
-| Technology | Purpose |
-|---|---|
-| Python | Core programming language |
-| Streamlit | Web application framework |
-| Pandas | Data analysis |
-| NumPy | Numerical computation |
-| Scikit-learn | Machine Learning |
-| Plotly | Interactive visualization |
-| Matplotlib | Data visualization |
-| Joblib | Model handling |
-| ReportLab | PDF generation |
-| Statsmodels | Statistical analysis |
-
----
-
-## 🤖 Machine Learning Pipeline
+The workflow includes:
 
 ```text
-Dataset
-   ↓
+Dataset Upload
+      ↓
 Data Validation
-   ↓
+      ↓
 Data Preprocessing
-   ↓
-Feature Encoding
-   ↓
-Feature Scaling
-   ↓
-Machine Learning Model
-   ↓
+      ↓
+Feature Engineering
+      ↓
+Model Training
+      ↓
 Prediction
-   ↓
+      ↓
 Performance Analysis
-   ↓
-Visualization
